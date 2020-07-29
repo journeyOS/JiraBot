@@ -22,6 +22,8 @@ from issues.BotJira import BotJira
 
 from wechat.Bot import Bot
 
+from db.BotDatabase import BotDatabase
+
 review_message = "# [{}]({})\n" \
                  " \n" \
                  "> <font color=\"comment\">请帮忙review，有问题-1，没有问题+1</font>\n\n" \
@@ -34,6 +36,8 @@ class BotReview(object):
     def __init__(self):
         self.userConfig = Utils.readUserConfig()
         self.bot_key_test = self.userConfig["bot"]["bot_key_test"]
+        self.botDatabase = BotDatabase()
+        self.tableIssue = self.botDatabase.getTableIssue()
 
     def fetchIssues(self, sql):
         botJira = BotJira()
@@ -44,19 +48,23 @@ class BotReview(object):
         botIssues = self.fetchIssues(sql)
         for botIssue in botIssues:
             if "" != botIssue.comment:
-                flags = True
-                for saveIssue in Utils.readSendIssues():
-                    if saveIssue.strip() == botIssue.issue:
-                        flags = False
-                        print(datetime.datetime.now())
-                        print("%s has been review, has been saved %s in file\n" % (botIssue.issue, saveIssue.strip()))
-                        break
+                flags = False
+                result = self.tableIssue.find_one(issue=botIssue.issue)
+                print(datetime.datetime.now())
+                if result is not None:
+                    if result["dock_team"] == 1:
+                        print("dock team %s has been saved\n" % (botIssue.issue))
                     else:
-                        if (flags):
-                            flags = True
+                        flags = True
+                        self.tableIssue.update(dict(issue=botIssue.issue, dock_team=1, game_team=result["game_team"]),
+                                               ["issue"])
+                        print("dock team %s need save(update)\n" % (botIssue.issue))
+                else:
+                    flags = True
+                    self.tableIssue.insert(dict(issue=botIssue.issue, dock_team=1, game_team=0))
+                    print("dock team %s need save\n" % (botIssue.issue))
 
                 if (flags):
-                    Utils.writeSendIssues(botIssue.issue)
                     message = review_message.format(botIssue.issue, botIssue.link, botIssue.comment)
                     print(message)
                     if who == "":

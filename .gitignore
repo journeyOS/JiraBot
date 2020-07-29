@@ -9,5 +9,6 @@ venv/*
 */*/*/__pycache__/*
 */*/*/*/__pycache__/*
 
+bot-issue.db
 /config/
 /cache/

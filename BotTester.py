@@ -24,9 +24,9 @@ from issues.BotJira import BotJira
 from wechat.Bot import Bot
 
 review_message = "{issue}: {title} \n" \
-                 "\t Jira地址：{issue_link}\n" \
-                 "\t 处理人:{owner}\n" \
-                 "\t Gerrit地址:{patch_link}\n\n"
+                 "---> 处理人: {owner}\n" \
+                 "---> Jira地址: {issue_link}\n" \
+                 "---> Gerrit地址: {patch_link}\n\n"
 
 
 class BotTester(object):
@@ -38,7 +38,8 @@ class BotTester(object):
         today = datetime.date.today()
         yesterday = today - datetime.timedelta(days=1)
         botPatchs = botGerrit.get_patch_info_from_file(yesterday)
-        message = yesterday + " GameDock模块合入问题输 = %d \n\n" % len(botPatchs)
+        message = "%s GameDock模块合入问题数 = %d \n" \
+                  "👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 \n" % (yesterday, len(botPatchs))
         for botPatch in botPatchs:
             botIssue = botJira.searchIssue(botPatch.issue)
             message += review_message.format(issue=botPatch.issue,

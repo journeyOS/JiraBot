@@ -46,7 +46,7 @@ jira_jql_game_team_push_mp = jiraConfig['jira_jql_game_team_push_mp']
 
 
 def jobDI():
-    botDI.notify(bot_key_game_dock, bot_key_test)
+    botDI.notify(bot_key_test, jira_game_dock_jql)
 
 
 def jobDITest():
@@ -81,11 +81,12 @@ for i in ["09:30", "17:30"]:
     schedule.every().thursday.at(i).do(runThreaded, jobDI)
     schedule.every().friday.at(i).do(runThreaded, jobDI)
 
-schedule.every().monday.at("09:30").do(runThreaded, jobTester)
-schedule.every().tuesday.at("09:30").do(runThreaded, jobTester)
-schedule.every().wednesday.at("09:30").do(runThreaded, jobTester)
-schedule.every().thursday.at("09:30").do(runThreaded, jobTester)
-schedule.every().friday.at("09:30").do(runThreaded, jobTester)
+botTesterTime = "10:00"
+schedule.every().monday.at(botTesterTime).do(runThreaded, jobTester)
+schedule.every().tuesday.at(botTesterTime).do(runThreaded, jobTester)
+schedule.every().wednesday.at(botTesterTime).do(runThreaded, jobTester)
+schedule.every().thursday.at(botTesterTime).do(runThreaded, jobTester)
+schedule.every().friday.at(botTesterTime).do(runThreaded, jobTester)
 
 schedule.every(5).minutes.do(runThreaded, jobReview)
 

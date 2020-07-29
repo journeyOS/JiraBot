@@ -23,6 +23,8 @@ from issues.BotJira import BotJira
 
 from wechat.Bot import Bot
 
+from db.BotDatabase import BotDatabase
+
 comment_message = "#{count} : {who}\n" \
                   "{comment}\n\n"
 
@@ -39,6 +41,8 @@ class BotMergeCode(object):
     def __init__(self):
         self.userConfig = Utils.readUserConfig()
         self.bot_key_test = self.userConfig["bot"]["bot_key_test"]
+        self.botDatabase = BotDatabase()
+        self.tableIssue = self.botDatabase.getTableIssue()
 
     def fetchIssues(self, sql):
         botJira = BotJira()
@@ -49,17 +53,27 @@ class BotMergeCode(object):
         botIssues = self.fetchIssues(sql)
         datas = dict()
         issue_count = 0
-        savedIssues = list()
-        remoteIssues = list()
         total_comment_message = ""
         total_author_message = ""
 
-        for saveIssue in Utils.readMergeCode():
-            savedIssues.append(saveIssue.strip())
-
+        flags = True
         for botIssue in botIssues:
             if "" != botIssue.comment:
-                remoteIssues.append(botIssue.issue)
+                if (flags):
+                    result = self.tableIssue.find_one(issue=botIssue.issue)
+                    print(datetime.datetime.now())
+                    if result is not None:
+                        if result["game_team"] == 1:
+                            print("game team %s has been saved\n" % (botIssue.issue))
+                        else:
+                            flags = False
+                            self.tableIssue.update(
+                                dict(issue=botIssue.issue, dock_team=result["dock_team"], game_team=1), ["issue"])
+                            print("game team %s need save(update)\n" % (botIssue.issue))
+                    else:
+                        flags = False
+                        self.tableIssue.insert(dict(issue=botIssue.issue, dock_team=0, game_team=1))
+                        print("game team %s need save\n" % (botIssue.issue))
 
                 if botIssue.commentAuthor not in datas:
                     datas[botIssue.commentAuthor] = [0]
@@ -78,17 +92,10 @@ class BotMergeCode(object):
             issue_count)) + total_comment_message + total_message_count.format(
             count=str(issue_count)) + total_author_message
 
-        # print(savedIssues)
-        # print(remoteIssues)
-        if len(set(remoteIssues).difference(savedIssues)) == 0:
+        if flags:
             print(datetime.datetime.now())
-            print("has been notify\n")
+            print("game team has been notify\n")
         else:
-            for issue in list(set(remoteIssues).difference(set(savedIssues))):
-                print(datetime.datetime.now())
-                print("write issue = %s \n" % issue)
-                Utils.writeMergeCode(issue)
-
             print(total_message)
             if who == "":
                 who = self.bot_key_test
