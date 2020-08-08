@@ -95,10 +95,10 @@ schedule.every(5).minutes.do(runThreaded, jobMergeCode)
 schedule.every(1).hours.do(runThreaded, jobTrack)
 
 if __name__ == '__main__':
-    jobDITest()
-    # jobReview()
-    # jobMergeCode()
-    # jobTrack()
-    # while True:
-    #     schedule.run_pending()
-    #     time.sleep(5)
+    # jobDITest()
+    jobReview()
+    jobMergeCode()
+    jobTrack()
+    while True:
+        schedule.run_pending()
+        time.sleep(5)
