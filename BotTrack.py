@@ -18,6 +18,7 @@
 import datetime
 
 from base import Singleton
+from im.dingding import DingDing
 from issues.BotJira import BotJira
 
 from wechat.Bot import Bot
@@ -29,6 +30,10 @@ review_message = "# [{}]({})\n" \
 
 class BotTrack(object):
     __metaclass__ = Singleton
+
+    def __init__(self):
+        self.access_token = self.userConfig["dingding"]["access_token"]
+        self.secret = self.userConfig["dingding"]["secret"]
 
     def fetchIssues(self, sql):
         botJira = BotJira()
@@ -44,3 +49,7 @@ class BotTrack(object):
             print(message)
             bot = Bot(who)
             bot.set_text(message, type='markdown').send()
+
+            ding = DingDing(self.access_token)
+            ding.set_secret(self.secret)
+            # ding.send_markdown('处理问题提醒', message)

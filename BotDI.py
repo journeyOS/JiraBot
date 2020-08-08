@@ -20,8 +20,10 @@ import time
 
 from base import Utils
 from issues.BotJira import BotJira
+from im.dingding import DingDing
 from office.excel import WriteExcel
 from wechat.Bot import Bot
+
 
 TOTAL = "总数"
 DI = [10, 3, 1, 0.1]
@@ -47,6 +49,8 @@ class BotDI:
     def __init__(self):
         self.userConfig = Utils.readUserConfig()
         self.bot_key_test = self.userConfig["bot"]["bot_key_test"]
+        self.access_token = self.userConfig["dingding"]["access_token"]
+        self.secret = self.userConfig["dingding"]["secret"]
 
     def fetchIssues(self, sql):
         botJira = BotJira()
@@ -214,5 +218,9 @@ class BotDI:
             who = self.bot_key_test
         bot = Bot(who)
         bot.set_text(message, type='markdown').send()
+
+        ding = DingDing(self.access_token)
+        ding.set_secret(self.secret)
+        # ding.send_markdown('DI统计', message)
 
         # self.writeIssues(botIssues)

@@ -19,11 +19,13 @@ import datetime
 import time
 
 from base import Singleton, Utils
+from im.dingding import DingDing
 from issues.BotJira import BotJira
 
 from wechat.Bot import Bot
 
 from db.BotDatabase import BotDatabase
+
 
 comment_message = "#{count} : {who}\n" \
                   "{comment}\n\n"
@@ -43,6 +45,8 @@ class BotMergeCode(object):
         self.bot_key_test = self.userConfig["bot"]["bot_key_test"]
         self.botDatabase = BotDatabase()
         self.tableIssue = self.botDatabase.getTableIssue()
+        self.access_token = self.userConfig["dingding"]["access_token"]
+        self.secret = self.userConfig["dingding"]["secret"]
 
     def fetchIssues(self, sql):
         botJira = BotJira()
@@ -101,3 +105,7 @@ class BotMergeCode(object):
                 who = self.bot_key_test
             bot = Bot(who)
             bot.set_text(total_message, type='text').set_mentioned_list(["@solo.huang"]).send()
+
+            ding = DingDing(self.access_token)
+            ding.set_secret(self.secret)
+            # ding.send_text(total_message)

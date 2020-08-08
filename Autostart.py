@@ -19,10 +19,13 @@
 import os
 
 from base import Utils
+from im.dingding import DingDing
 from wechat.Bot import Bot
 
 userConfig = Utils.readUserConfig()
 bot_key_test = userConfig["bot"]["bot_key_test"]
+access_token = userConfig["dingding"]["access_token"]
+secret = userConfig["dingding"]["secret"]
 
 message = "Welcome to the world of raspberry pi, device ip = {ip}\n"
 
@@ -34,6 +37,11 @@ if __name__ == '__main__':
         break
 
     print(ip)
+    send_message = message.format(ip=ip)
     process.close()
     bot = Bot(bot_key_test)
-    bot.set_text(message.format(ip=ip), type='text').send()
+    bot.set_text(send_message, type='text').send()
+
+    ding = DingDing(access_token)
+    ding.set_secret(secret)
+    ding.send_text(send_message)

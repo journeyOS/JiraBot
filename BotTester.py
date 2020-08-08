@@ -21,6 +21,7 @@ from base import Singleton
 from gerrit.BotGerrit import BotGerrit
 
 from issues.BotJira import BotJira
+from im.dingding import DingDing
 from wechat.Bot import Bot
 
 review_message = "{issue}: {title} \n" \
@@ -31,6 +32,10 @@ review_message = "{issue}: {title} \n" \
 
 class BotTester(object):
     __metaclass__ = Singleton
+
+    def __init__(self):
+        self.access_token = self.userConfig["dingding"]["access_token"]
+        self.secret = self.userConfig["dingding"]["secret"]
 
     def notifyTester(self, who):
         botGerrit = BotGerrit()
@@ -53,3 +58,7 @@ class BotTester(object):
 
         bot = Bot(who)
         bot.set_text(message, type='text').send()
+
+        ding = DingDing(self.access_token)
+        ding.set_secret(self.secret)
+        # ding.send_text(message)
