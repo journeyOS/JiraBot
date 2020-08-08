@@ -16,7 +16,7 @@
 #  limitations under the License.
 
 
-import sys
+import os
 
 from base import Utils
 from wechat.Bot import Bot
@@ -27,6 +27,13 @@ bot_key_test = userConfig["bot"]["bot_key_test"]
 message = "Welcome to the world of raspberry pi, device ip = {ip}\n"
 
 if __name__ == '__main__':
-    ip = sys.argv[1]
+    process = os.popen("hostname -I")
+    outputs = process.readlines()
+    for output in outputs:
+        ip = output.strip()
+        break
+
+    print(ip)
+    process.close()
     bot = Bot(bot_key_test)
     bot.set_text(message.format(ip=ip), type='text').send()
