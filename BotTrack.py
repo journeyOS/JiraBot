@@ -17,7 +17,7 @@
 
 import datetime
 
-from base import Singleton
+from base import Singleton, Utils
 from im.dingding import DingDing
 from issues.BotJira import BotJira
 
@@ -32,6 +32,7 @@ class BotTrack(object):
     __metaclass__ = Singleton
 
     def __init__(self):
+        self.userConfig = Utils.readUserConfig()
         self.access_token = self.userConfig["dingding"]["access_token"]
         self.secret = self.userConfig["dingding"]["secret"]
 

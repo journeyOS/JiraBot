@@ -17,7 +17,7 @@
 
 import datetime
 
-from base import Singleton
+from base import Singleton, Utils
 from gerrit.BotGerrit import BotGerrit
 
 from issues.BotJira import BotJira
@@ -34,6 +34,7 @@ class BotTester(object):
     __metaclass__ = Singleton
 
     def __init__(self):
+        self.userConfig = Utils.readUserConfig()
         self.access_token = self.userConfig["dingding"]["access_token"]
         self.secret = self.userConfig["dingding"]["secret"]
 
