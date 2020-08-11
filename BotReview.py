@@ -25,17 +25,22 @@ from wechat.Bot import Bot
 
 from db.BotDatabase import BotDatabase
 
-
 review_message = "# [{}]({})\n" \
                  " \n" \
                  "> <font color=\"comment\">请帮忙review，有问题-1，没有问题+1</font>\n\n" \
                  "> {}\n\n"
+
+review_message_pi = "# [{}]({})\n" \
+                    " \n" \
+                    "> 请帮忙review，有问题-1，没有问题+1\n\n" \
+                    "> {}\n\n"
 
 
 class BotReview(object):
     __metaclass__ = Singleton
 
     def __init__(self):
+        self.isRaspberryPi = Utils.isRaspberryPi()
         self.userConfig = Utils.readUserConfig()
         self.bot_key_test = self.userConfig["bot"]["bot_key_test"]
         self.botDatabase = BotDatabase()
@@ -69,13 +74,19 @@ class BotReview(object):
                     print("dock team %s need save\n" % (botIssue.issue))
 
                 if (flags):
-                    message = review_message.format(botIssue.issue, botIssue.link, botIssue.comment)
-                    print(message)
-                    if who == "":
-                        who = self.bot_key_test
-                    bot = Bot(who)
-                    bot.set_text(message, type='markdown').send()
+                    if self.isRaspberryPi:
+                        message_format = review_message_pi
+                    else:
+                        message_format = review_message
 
-                    ding = DingDing(self.access_token)
-                    ding.set_secret(self.secret)
-                    # ding.send_markdown('Code review', message)
+                    message = message_format.format(botIssue.issue, botIssue.link, botIssue.comment)
+                    print(message)
+                    if self.isRaspberryPi:
+                        ding = DingDing(self.access_token)
+                        ding.set_secret(self.secret)
+                        ding.send_markdown('Code review', message)
+                    else:
+                        if who == "":
+                            who = self.bot_key_test
+                        bot = Bot(who)
+                        bot.set_text(message, type='markdown').send()

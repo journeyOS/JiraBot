@@ -26,7 +26,6 @@ from wechat.Bot import Bot
 
 from db.BotDatabase import BotDatabase
 
-
 comment_message = "#{count} : {who}\n" \
                   "{comment}\n\n"
 
@@ -41,6 +40,7 @@ class BotMergeCode(object):
     __metaclass__ = Singleton
 
     def __init__(self):
+        self.isRaspberryPi = Utils.isRaspberryPi()
         self.userConfig = Utils.readUserConfig()
         self.bot_key_test = self.userConfig["bot"]["bot_key_test"]
         self.botDatabase = BotDatabase()
@@ -101,11 +101,12 @@ class BotMergeCode(object):
             print("game team has been notify\n")
         else:
             print(total_message)
-            if who == "":
-                who = self.bot_key_test
-            bot = Bot(who)
-            bot.set_text(total_message, type='text').set_mentioned_list(["@solo.huang"]).send()
-
-            ding = DingDing(self.access_token)
-            ding.set_secret(self.secret)
-            # ding.send_text(total_message)
+            if self.isRaspberryPi:
+                ding = DingDing(self.access_token)
+                ding.set_secret(self.secret)
+                ding.send_text(total_message)
+            else:
+                if who == "":
+                    who = self.bot_key_test
+                bot = Bot(who)
+                bot.set_text(total_message, type='text').set_mentioned_list(["@solo.huang"]).send()

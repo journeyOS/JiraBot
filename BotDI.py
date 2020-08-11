@@ -24,7 +24,6 @@ from im.dingding import DingDing
 from office.excel import WriteExcel
 from wechat.Bot import Bot
 
-
 TOTAL = "总数"
 DI = [10, 3, 1, 0.1]
 # ['致命', '严重', '一般', '提示', '总数', 'DI']
@@ -36,6 +35,13 @@ total_message = "# K-Pro 问题总数 = <font color=\"warning\">{}</font>\n" \
                 "> 提示 = <font color=\"comment\">{}</font>\n" \
                 "> 总DI = <font color=\"warning\">{}</font>\n\n"
 
+total_message_pi = "# K-Pro 问题总数 = {}\n" \
+                   "## 致命 = {}\n" \
+                   "## 严重 = {}\n" \
+                   "## 一般 = {}\n" \
+                   "## 提示 = {}\n" \
+                   "## 总DI = {}\n\n"
+
 sub_message = "## <font color=\"comment\">{}</font>问题总数 = <font color=\"warning\">{}</font>\n" \
               "> 致命 = <font color=\"warning\">{}</font>\n" \
               "> 严重 = <font color=\"warning\">{}</font>\n" \
@@ -43,10 +49,18 @@ sub_message = "## <font color=\"comment\">{}</font>问题总数 = <font color=\"
               "> 提示 = <font color=\"comment\">{}</font>\n" \
               ">  DI = <font color=\"warning\">{}</font>\n\n"
 
+sub_message_pi = "## {}问题总数 = {}\n" \
+                 "## 致命 = {}\n" \
+                 "## 严重 = {}\n" \
+                 "## 一般 = {}\n" \
+                 "## 提示 = {}\n" \
+                 "##  DI = {}\n\n"
+
 
 class BotDI:
 
     def __init__(self):
+        self.isRaspberryPi = Utils.isRaspberryPi()
         self.userConfig = Utils.readUserConfig()
         self.bot_key_test = self.userConfig["bot"]["bot_key_test"]
         self.access_token = self.userConfig["dingding"]["access_token"]
@@ -125,11 +139,21 @@ class BotDI:
         for key, values in datas.items():
             print("key = %s , values = %s" % (key, values))
             if key != TOTAL:
-                local_sub_message += sub_message.format(key, values[4], values[0], values[1], values[2], values[3],
-                                                        values[5])
+                if self.isRaspberryPi:
+                    message_format = sub_message_pi
+                else:
+                    message_format = sub_message
 
-        last_message = total_message.format(datas[TOTAL][4], datas[TOTAL][0], datas[TOTAL][1],
-                                            datas[TOTAL][2], datas[TOTAL][3], datas[TOTAL][5])
+                local_sub_message += message_format.format(key, values[4], values[0], values[1], values[2], values[3],
+                                                           values[5])
+
+        if self.isRaspberryPi:
+            total_message_format = total_message_pi
+        else:
+            total_message_format = total_message
+
+        last_message = total_message_format.format(datas[TOTAL][4], datas[TOTAL][0], datas[TOTAL][1],
+                                                   datas[TOTAL][2], datas[TOTAL][3], datas[TOTAL][5])
         # print(last_message + local_sub_message)
         return last_message + local_sub_message
 
@@ -214,13 +238,14 @@ class BotDI:
         botIssues = self.fetchIssues(sql)
         message = self.parseIssues(botIssues)
         print("\n")
-        if who == "":
-            who = self.bot_key_test
-        bot = Bot(who)
-        bot.set_text(message, type='markdown').send()
-
-        ding = DingDing(self.access_token)
-        ding.set_secret(self.secret)
-        # ding.send_markdown('DI统计', message)
+        if self.isRaspberryPi:
+            ding = DingDing(self.access_token)
+            ding.set_secret(self.secret)
+            ding.send_markdown('DI统计', message)
+        else:
+            if who == "":
+                who = self.bot_key_test
+            bot = Bot(who)
+            bot.set_text(message, type='markdown').send()
 
         # self.writeIssues(botIssues)

@@ -14,7 +14,7 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-
+import io
 import json
 import os
 
@@ -34,24 +34,41 @@ def readJiraConfig():
         config = f.read()
     return json.loads(config)
 
+def isRaspberryPi(raise_on_errors=False):
+    try:
+        with io.open('/proc/cpuinfo', 'r') as cpuinfo:
+            found = False
+            for line in cpuinfo:
+                if line.startswith('Hardware'):
+                    found = True
+                    label, value = line.strip().split(':', 1)
+                    value = value.strip()
+                    if value not in (
+                        'BCM2708',
+                        'BCM2709',
+                        'BCM2835',
+                        'BCM2836'
+                    ):
+                        if raise_on_errors:
+                            raise ValueError(
+                                'This system does not appear to be a '
+                                'Raspberry Pi.'
+                            )
+                        else:
+                            return False
+            if not found:
+                if raise_on_errors:
+                    raise ValueError(
+                        'Unable to determine if this system is a Raspberry Pi.'
+                    )
+                else:
+                    return False
+    except IOError:
+        if raise_on_errors:
+            raise ValueError('Unable to open `/proc/cpuinfo`.')
+        else:
+            return False
 
-def readSendIssues():
-    with open(realPath("../cache/send_issuse.txt"), 'r') as f:
-        issues = f.readlines()
-    return issues
+    return True
 
 
-def writeSendIssues(issue):
-    with open(realPath("../cache/send_issuse.txt"), 'a') as f:
-        f.write(issue + '\n')
-
-
-def readMergeCode():
-    with open(realPath("../cache/merge_code.txt"), 'r') as f:
-        issues = f.readlines()
-    return issues
-
-
-def writeMergeCode(issue):
-    with open(realPath("../cache/merge_code.txt"), 'a') as f:
-        f.write(issue + '\n')

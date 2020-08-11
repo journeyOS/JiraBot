@@ -34,6 +34,7 @@ class BotTester(object):
     __metaclass__ = Singleton
 
     def __init__(self):
+        self.isRaspberryPi = Utils.isRaspberryPi()
         self.userConfig = Utils.readUserConfig()
         self.access_token = self.userConfig["dingding"]["access_token"]
         self.secret = self.userConfig["dingding"]["secret"]
@@ -57,9 +58,10 @@ class BotTester(object):
         print(datetime.datetime.now())
         print(message)
 
-        bot = Bot(who)
-        bot.set_text(message, type='text').send()
-
-        ding = DingDing(self.access_token)
-        ding.set_secret(self.secret)
-        # ding.send_text(message)
+        if self.isRaspberryPi:
+            ding = DingDing(self.access_token)
+            ding.set_secret(self.secret)
+            ding.send_text(message)
+        else:
+            bot = Bot(who)
+            bot.set_text(message, type='text').send()

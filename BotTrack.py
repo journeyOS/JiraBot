@@ -27,11 +27,16 @@ review_message = "# [{}]({})\n" \
                  " \n" \
                  "> <font color=\"comment\">有问题需要处理</font>\n\n"
 
+review_message_pi = "# [{}]({})\n" \
+                    " \n" \
+                    "> 有问题需要处理\n\n"
+
 
 class BotTrack(object):
     __metaclass__ = Singleton
 
     def __init__(self):
+        self.isRaspberryPi = Utils.isRaspberryPi()
         self.userConfig = Utils.readUserConfig()
         self.access_token = self.userConfig["dingding"]["access_token"]
         self.secret = self.userConfig["dingding"]["secret"]
@@ -46,11 +51,12 @@ class BotTrack(object):
     def notifyTrack(self, sql, who):
         botIssues = self.fetchIssues(sql)
         for botIssue in botIssues:
-            message = review_message.format(botIssue.issue, botIssue.link)
-            print(message)
-            bot = Bot(who)
-            bot.set_text(message, type='markdown').send()
-
-            ding = DingDing(self.access_token)
-            ding.set_secret(self.secret)
-            # ding.send_markdown('处理问题提醒', message)
+            if self.isRaspberryPi:
+                message = review_message_pi.format(botIssue.issue, botIssue.link)
+                ding = DingDing(self.access_token)
+                ding.set_secret(self.secret)
+                ding.send_markdown('处理问题提醒', message)
+            else:
+                message = review_message.format(botIssue.issue, botIssue.link)
+                bot = Bot(who)
+                bot.set_text(message, type='markdown').send()
