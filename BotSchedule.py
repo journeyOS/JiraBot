@@ -58,7 +58,7 @@ def jobReview():
 
 
 def jobMergeCode():
-    botMergeCode.notifyMergeCode(bot_key_test, jira_jql_game_team_push_mp)
+    botMergeCode.notifyMergeCode(bot_key_test, jira_jql_game_team_push_mp, force=False)
 
 
 def jobTrack():
@@ -92,10 +92,11 @@ schedule.every(5).minutes.do(runThreaded, jobReview)
 
 schedule.every(5).minutes.do(runThreaded, jobMergeCode)
 
-schedule.every(1).hours.do(runThreaded, jobTrack)
+schedule.every(3).hours.do(runThreaded, jobTrack)
 
 if __name__ == '__main__':
     # jobDITest()
+    botMergeCode.notifyMergeCode(bot_key_test, jira_jql_game_team_push_mp, force=True)
     jobReview()
     jobMergeCode()
     jobTrack()

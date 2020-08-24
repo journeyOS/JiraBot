@@ -114,7 +114,8 @@ class Bot(Thread):
         elif self._text:
             return self._text
         else:
-            raise KeyError("请设置发送的消息")
+            return ''
+            # raise KeyError("请设置发送的消息")
 
     def set_mentioned_list(self, ls):
         assert isinstance(ls, list)

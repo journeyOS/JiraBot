@@ -90,3 +90,4 @@ class BotReview(object):
                             who = self.bot_key_test
                         bot = Bot(who)
                         bot.set_text(message, type='markdown').send()
+                        bot.set_text('', type='text').set_mentioned_list(["@all"]).send()

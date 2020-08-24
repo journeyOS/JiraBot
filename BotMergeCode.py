@@ -53,14 +53,18 @@ class BotMergeCode(object):
         botIssues = botJira.searchJql(sql)
         return botIssues
 
-    def notifyMergeCode(self, who, sql):
+    def notifyMergeCode(self, who, sql, force):
         botIssues = self.fetchIssues(sql)
         datas = dict()
         issue_count = 0
         total_comment_message = ""
         total_author_message = ""
 
-        flags = True
+        if force:
+            flags = False
+        else:
+            flags = True
+
         for botIssue in botIssues:
             if "" != botIssue.comment:
                 if (flags):
@@ -109,4 +113,4 @@ class BotMergeCode(object):
                 if who == "":
                     who = self.bot_key_test
                 bot = Bot(who)
-                bot.set_text(total_message, type='text').set_mentioned_list(["@solo.huang"]).send()
+                bot.set_text(total_message, type='text').send()
