@@ -25,15 +25,27 @@ from wechat.Bot import Bot
 
 from db.BotDatabase import BotDatabase
 
+from gerrit.BotGerrit import BotGerrit
+
 review_message = "# [{}]({})\n" \
                  " \n" \
+                 "> <font color=\"comment\">处理人：{}</font>\n\n" \
                  "> <font color=\"comment\">请帮忙review，有问题-1，没有问题+1</font>\n\n" \
-                 "> {}\n\n"
+                 "> {}\n" \
+                 "\n" \
+                 "\n\n备注：\n" \
+                 " {}" \
+                 "\n\n"
 
 review_message_pi = "# [{}]({})\n" \
                     " \n" \
+                    "> <font color=\"comment\">处理人：{}</font>\n\n" \
                     "> 请帮忙review，有问题-1，没有问题+1\n\n" \
-                    "> {}\n\n"
+                    "> {}\n" \
+                    "\n" \
+                    "\n\n备注：\n" \
+                    " {}" \
+                    "\n\n"
 
 
 class BotReview(object):
@@ -53,7 +65,61 @@ class BotReview(object):
         botIssues = botJira.searchJql(sql)
         return botIssues
 
+    def fetchPatchMessage(self, who):
+        botGerrit = BotGerrit()
+        botJira = BotJira()
+
+        botPatchs = botGerrit.get_comment_patch_info_from_project(host_url='gerrit-prv.blackshark.com',
+                                                                  project_url='git/android/platform/vendor/zeusis/zui/app/ZsGameDock',
+                                                                  status='open',
+                                                                  comment='need_review')
+        for botPatch in botPatchs:
+            flags = False
+            result = self.tableIssue.find_one(issue=botPatch.number)
+            print(datetime.datetime.now())
+            if result is not None:
+                if result["dock_team"] == 1:
+                    print("dock team %s has been saved\n" % (botPatch.number))
+                else:
+                    flags = True
+                    self.tableIssue.update(dict(issue=botPatch.number, dock_team=1, game_team=result["game_team"]),
+                                           ["issue"])
+                    print("dock team %s need save(update)\n" % (botPatch.number))
+            else:
+                flags = True
+                self.tableIssue.insert(dict(issue=botPatch.number, dock_team=1, game_team=0))
+                print("dock team %s need save\n" % (botPatch.number))
+
+            if (flags):
+                if self.isRaspberryPi:
+                    message_format = review_message_pi
+                else:
+                    message_format = review_message
+
+                issue = "Patch未填单号"
+                link = "botPatch.url"
+
+                if botPatch.issue != "null":
+                    botIssue = botJira.searchIssue(botPatch.issue)
+                    if botIssue is not None:
+                        issue = botIssue.issue
+                        link = botIssue.link
+
+                message = message_format.format(issue, link, botPatch.owner_name, botPatch.url, botPatch.commitMessage)
+                print(message)
+                if self.isRaspberryPi:
+                    ding = DingDing(self.access_token)
+                    ding.set_secret(self.secret)
+                    ding.send_markdown('Code review', message)
+                else:
+                    if who == "":
+                        who = self.bot_key_test
+                    bot = Bot(who)
+                    bot.set_text(message, type='markdown').send()
+                    bot.set_text('', type='text').set_mentioned_list(["@all"]).send()
+
     def notifyReview(self, who, sql):
+        self.fetchPatchMessage(who)
         botIssues = self.fetchIssues(sql)
         for botIssue in botIssues:
             if "" != botIssue.comment:
@@ -79,7 +145,8 @@ class BotReview(object):
                     else:
                         message_format = review_message
 
-                    message = message_format.format(botIssue.issue, botIssue.link, botIssue.comment)
+                    message = message_format.format(botIssue.issue, botIssue.link,
+                                                    botIssue.commentAuthor, botIssue.comment, "")
                     print(message)
                     if self.isRaspberryPi:
                         ding = DingDing(self.access_token)

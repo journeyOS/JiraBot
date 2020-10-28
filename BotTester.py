@@ -44,9 +44,26 @@ class BotTester(object):
         botJira = BotJira()
         today = datetime.date.today()
         yesterday = today - datetime.timedelta(days=1)
-        botPatchs = botGerrit.get_patch_info_from_file(yesterday)
-        message = "%s GameDock模块合入问题数 = %d \n" \
-                  "👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 \n" % (yesterday, len(botPatchs))
+        # botPatchs = botGerrit.get_patch_info_from_file(yesterday)
+        botPatchs = botGerrit.get_patch_info_from_project(host_url='gerrit-prv.blackshark.com',
+                                                          project_url='git/android/platform/vendor/zeusis/zui/app/ZsGameDock',
+                                                          branch_name='bsui_q_mp',
+                                                          status='merged',
+                                                          yesterday=yesterday,
+                                                          today=today)
+        if (len(botPatchs) == 0):
+            botPatchs = botGerrit.get_patch_info_from_project(host_url='gerrit-prv.blackshark.com',
+                                                              project_url='git/android/platform/vendor/zeusis/zui/app/ZsGameDock',
+                                                              branch_name='bsui_q',
+                                                              status='merged',
+                                                              yesterday=yesterday,
+                                                              today=today)
+            message = "%s GameDock模块合入%s分支问题数 = %d \n" \
+                      "👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 \n" % (yesterday, "bsui_q", len(botPatchs))
+        else:
+            message = "%s GameDock模块合入%s分支问题数 = %d \n" \
+                      "👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 \n" % (yesterday, "bsui_q_mp", len(botPatchs))
+
         for botPatch in botPatchs:
             botIssue = botJira.searchIssue(botPatch.issue)
             message += review_message.format(issue=botPatch.issue,
@@ -58,10 +75,11 @@ class BotTester(object):
         print(datetime.datetime.now())
         print(message)
 
-        if self.isRaspberryPi:
-            ding = DingDing(self.access_token)
-            ding.set_secret(self.secret)
-            ding.send_text(message)
-        else:
-            bot = Bot(who)
-            bot.set_text(message, type='text').send()
+        if len(botPatchs) > 0:
+            if self.isRaspberryPi:
+                ding = DingDing(self.access_token)
+                ding.set_secret(self.secret)
+                ding.send_text(message)
+            else:
+                bot = Bot(who)
+                bot.set_text(message, type='text').send()

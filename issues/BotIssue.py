@@ -36,21 +36,30 @@ class BotIssue:
             pass
         # 状态
         self.status = issue.fields.status
-        # 严重程度
-        if issue.fields.customfield_15121 != None:
-            self.level = issue.fields.customfield_15121.value
-        # 修改方案
-        self.modification = issue.fields.customfield_15111
-        # 原因分析
-        self.reason_analysis = issue.fields.customfield_15115
-        # 测试建议
-        self.test_suggestion = issue.fields.customfield_16206
-        # 自测结果
-        self.test_result = issue.fields.customfield_15502
-        # 回归失败次数
-        self.fix_fail_count = issue.fields.customfield_17402
-        # 审核失败次数
-        self.check_fail_count = issue.fields.customfield_17403
+        if "SR" in self.issue or "JUIXIII" in self.issue:
+            print("需求")
+        else:
+            # 严重程度
+            if issue.fields.customfield_15121 != None:
+                self.level = issue.fields.customfield_15121.value
+            # 修改方案
+            if issue.fields.customfield_15111 != None:
+                self.modification = issue.fields.customfield_15111
+            # 原因分析
+            if issue.fields.customfield_15115 != None:
+                self.reason_analysis = issue.fields.customfield_15115
+            # 测试建议
+            if issue.fields.customfield_16206 != None:
+                self.test_suggestion = issue.fields.customfield_16206
+            # 自测结果
+            if issue.fields.customfield_15502 != None:
+                self.test_result = issue.fields.customfield_15502
+            # 回归失败次数
+            if issue.fields.customfield_17402 != None:
+                self.fix_fail_count = issue.fields.customfield_17402
+            # 审核失败次数
+            if issue.fields.customfield_17403 != None:
+                self.check_fail_count = issue.fields.customfield_17403
         # 备注(只关心：包含"=>问题"，"=>解法"的评论)
         for comment in issue.fields.comment.comments:
             if "=>问题" in comment.body or "=> 问题" in comment.body or "=>解法" in comment.body or "=> 解法" in comment.body:

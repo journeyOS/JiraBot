@@ -20,10 +20,16 @@ import re
 class BotPatch:
 
     def __init__(self, result):
-        # 单号
-        self.issue = re.findall(re.compile(r'[[](.*?)[]]', re.S), result['subject'])[0]
+        try:
+            # 单号
+            self.issue = re.findall(re.compile(r'[[](.*?)[]]', re.S), result['subject'])[0]
+        except:
+            self.issue = "null"
+            pass
+
         # 单号地址
         self.issue_link = "http://jira.blackshark.com/browse/" + self.issue
+
         # 提交人
         self.owner_name = result["owner"]["name"].replace('BP', '')
         # patch地址
@@ -32,6 +38,9 @@ class BotPatch:
         self.branch = result["branch"]
         # status
         self.status = result["status"]
+        # number
+        self.number = result["number"]
+        self.commitMessage = result["commitMessage"]
 
         def __str__(self):
             print(['%s:%s' % item for item in self.__dict__.items()])

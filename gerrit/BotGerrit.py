@@ -26,12 +26,28 @@ class BotGerrit(object):
     __metaclass__ = Singleton
 
     def __init__(self):
-        self.base_host = "ssh -p 29418 {host} gerrit query project:{project} --format=JSON branch:{branch} status:{status} after:{today} before:{tomorrow} "
+        self.base_host = "ssh -p 29418 {host} gerrit query project:{project} --format=JSON branch:{branch} status:{status} after:{yesterday} before:{today} "
+        self.comment_host = "ssh -p 29418 {host} gerrit query project:{project} --format=JSON status:{status} label:Code-Review+1,user=jenkins@blackshark.com label:Verified+1,user=jenkins@blackshark.com comment:{comment}"
         self.file = "{pwd}/cache/{time}.txt"
 
-    def get_patch_info_from_project(self, host_url, project_url, branch_name, status, today, next_day):
+    def get_patch_info_from_project(self, host_url, project_url, branch_name, status, yesterday, today):
         cmd = self.base_host.format(host=host_url, project=project_url, branch=branch_name,
-                                    status=status, today=today, tomorrow=next_day)
+                                    status=status, yesterday=yesterday, today=today)
+        print(cmd)
+        process = os.popen(cmd)
+        outputs = process.readlines()
+
+        del outputs[-1]  # 删除最后一个元素
+        patchs = list()
+        for output in outputs:
+            result = json.loads(output)
+            patchs.append(BotPatch(result))
+        process.close()
+        return patchs
+
+    def get_comment_patch_info_from_project(self, host_url, project_url, status, comment):
+        cmd = self.comment_host.format(host=host_url, project=project_url, status=status, comment=comment)
+        print(cmd)
         process = os.popen(cmd)
         outputs = process.readlines()
 

@@ -94,7 +94,8 @@ class BotMergeCode(object):
                                                                                        comment=botIssue.comment)
         for key, values in datas.items():
             # print("key = %s , values = %s" % (key, values))
-            total_author_message = total_author_message + author_message.format(who=key, count=str(values))
+            count = str(values)
+            total_author_message = total_author_message + author_message.format(who=key, count=count)
 
         total_message = time_message.format(time=time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()), count=str(
             issue_count)) + total_comment_message + total_message_count.format(
@@ -105,12 +106,13 @@ class BotMergeCode(object):
             print("game team has been notify\n")
         else:
             print(total_message)
-            if self.isRaspberryPi:
-                ding = DingDing(self.access_token)
-                ding.set_secret(self.secret)
-                ding.send_text(total_message)
-            else:
-                if who == "":
-                    who = self.bot_key_test
-                bot = Bot(who)
-                bot.set_text(total_message, type='text').send()
+            if issue_count > 0:
+                if self.isRaspberryPi:
+                    ding = DingDing(self.access_token)
+                    ding.set_secret(self.secret)
+                    ding.send_text(total_message)
+                else:
+                    if who == "":
+                        who = self.bot_key_test
+                    bot = Bot(who)
+                    bot.set_text(total_message, type='text').send()

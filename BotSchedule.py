@@ -95,7 +95,8 @@ schedule.every(5).minutes.do(runThreaded, jobMergeCode)
 schedule.every(3).hours.do(runThreaded, jobTrack)
 
 if __name__ == '__main__':
-    # jobDITest()
+    jobDITest()
+    jobTester()
     botMergeCode.notifyMergeCode(bot_key_test, jira_jql_game_team_push_mp, force=True)
     jobReview()
     jobMergeCode()
