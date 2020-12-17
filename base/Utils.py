@@ -34,6 +34,11 @@ def readJiraConfig():
         config = f.read()
     return json.loads(config)
 
+def readGerritConfig():
+    with open(realPath("../config/gerrit.json"), 'r') as f:
+        config = f.read()
+    return json.loads(config)
+
 def isRaspberryPi(raise_on_errors=False):
     try:
         with io.open('/proc/cpuinfo', 'r') as cpuinfo:

@@ -28,14 +28,14 @@ TOTAL = "总数"
 DI = [10, 3, 1, 0.1]
 # ['致命', '严重', '一般', '提示', '总数', 'DI']
 
-total_message = "# K-Pro 问题总数 = <font color=\"warning\">{}</font>\n" \
+total_message = "# kaiser项目 问题总数 = <font color=\"warning\">{}</font>\n" \
                 "> 致命 = <font color=\"warning\">{}</font>\n" \
                 "> 严重 = <font color=\"warning\">{}</font>\n" \
                 "> 一般 = <font color=\"comment\">{}</font>\n" \
                 "> 提示 = <font color=\"comment\">{}</font>\n" \
                 "> 总DI = <font color=\"warning\">{}</font>\n\n"
 
-total_message_pi = "# K-Pro 问题总数 = {}\n" \
+total_message_pi = "# kaiser项目 问题总数 = {}\n" \
                    "## 致命 = {}\n" \
                    "## 严重 = {}\n" \
                    "## 一般 = {}\n" \

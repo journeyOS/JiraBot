@@ -19,7 +19,7 @@ class BotIssue:
     comment = ""
     commentAuthor = ""
     level = ""
-
+    assignee = "Unknown"
     def __init__(self, baseUrl, issue):
         # 单号
         self.issue = issue.key

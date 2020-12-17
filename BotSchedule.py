@@ -35,18 +35,28 @@ botTester = BotTester()
 
 userConfig = Utils.readUserConfig()
 jiraConfig = Utils.readJiraConfig()
+gerritConfig = Utils.readGerritConfig()
 
 bot_key_test = userConfig["bot"]["bot_key_test"]
 bot_key_game_dock = userConfig["bot"]["bot_key_game_dock"]
+bot_key_tester = userConfig["bot"]["bot_key_tester"]
 
 jira_game_dock_jql = jiraConfig['jira_game_dock_jql']
 jira_track = jiraConfig['jira_track']
 jira_jql_review = jiraConfig['jira_jql_review']
 jira_jql_game_team_push_mp = jiraConfig['jira_jql_game_team_push_mp']
 
+host_url_prv = gerritConfig['host_url_prv']
+project_url_game_dock = gerritConfig['project_url_game_dock']
+branch_name_game_dock_dev = gerritConfig['branch_name_game_dock_dev']
+branch_name_game_dock_mp = gerritConfig['branch_name_game_dock_mp']
+host_url = gerritConfig['host_url']
+project_url_game_dock_engine = gerritConfig['project_url_game_dock_engine']
+branch_name_game_dock_engine_dev = gerritConfig['branch_name_game_dock_engine_dev']
+
 
 def jobDI():
-    botDI.notify(bot_key_test, jira_game_dock_jql)
+    botDI.notify(bot_key_game_dock, jira_game_dock_jql)
 
 
 def jobDITest():
@@ -66,7 +76,10 @@ def jobTrack():
 
 
 def jobTester():
-    botTester.notifyTester(bot_key_test)
+    botTester.notifyTester(bot_key_test, host_url_prv, project_url_game_dock, branch_name_game_dock_dev)
+    botTester.notifyTester(bot_key_test, host_url_prv, project_url_game_dock, branch_name_game_dock_mp)
+
+    botTester.notifyTester(bot_key_tester, host_url_prv, project_url_game_dock, branch_name_game_dock_dev)
 
 
 def runThreaded(job_func):
@@ -74,7 +87,7 @@ def runThreaded(job_func):
     job_thread.start()
 
 
-for i in ["09:30", "17:30"]:
+for i in ["10:00", "17:30"]:
     schedule.every().monday.at(i).do(runThreaded, jobDI)
     schedule.every().tuesday.at(i).do(runThreaded, jobDI)
     schedule.every().wednesday.at(i).do(runThreaded, jobDI)
@@ -96,7 +109,11 @@ schedule.every(3).hours.do(runThreaded, jobTrack)
 
 if __name__ == '__main__':
     jobDITest()
-    jobTester()
+
+    # jobTester()
+    botTester.notifyTester(bot_key_test, host_url_prv, project_url_game_dock, branch_name_game_dock_dev)
+    botTester.notifyTester(bot_key_test, host_url_prv, project_url_game_dock, branch_name_game_dock_mp)
+
     botMergeCode.notifyMergeCode(bot_key_test, jira_jql_game_team_push_mp, force=True)
     jobReview()
     jobMergeCode()
